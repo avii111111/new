@@ -45,7 +45,9 @@ export function AIChatAssistant() {
         setSessionId(data.sessionId);
         setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
       } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: "I'm sorry, I'm having trouble connecting to my servers right now." }]);
+        const errorData = await res.json().catch(() => null);
+        const errorMessage = errorData?.error || "I'm sorry, my AI connection isn't configured correctly. Please check your system settings or API keys.";
+        setMessages(prev => [...prev, { role: 'assistant', content: errorMessage }]);
       }
     } catch (e) {
       setMessages(prev => [...prev, { role: 'assistant', content: "Network error occurred." }]);
@@ -76,7 +78,7 @@ export function AIChatAssistant() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed md:bottom-24 md:right-6 bottom-0 right-0 md:w-96 w-full md:h-[600px] h-full bg-slate-900/40 backdrop-blur-xl md:rounded-2xl shadow-3xl flex flex-col overflow-hidden z-50 border border-white/10"
+            className="fixed md:bottom-20 md:right-6 bottom-0 right-0 md:w-96 w-full max-h-[80vh] md:h-[500px] h-full bg-slate-900/40 backdrop-blur-xl md:rounded-2xl shadow-3xl flex flex-col overflow-hidden z-50 border border-white/10"
           >
             {/* Header */}
             <div className="bg-secondary/20 backdrop-blur-md px-4 py-4 flex justify-between items-center text-white border-b border-white/10">
@@ -94,8 +96,8 @@ export function AIChatAssistant() {
               </div>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="text-white/70 hover:text-white transition-colors"
-                aria-label="Close"
+                className="text-white/70 hover:text-white transition-colors p-2 -mr-2 bg-white/5 hover:bg-white/10 rounded-full"
+                aria-label="Minimize"
               >
                 <X className="h-5 w-5" />
               </button>

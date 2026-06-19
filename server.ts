@@ -31,7 +31,14 @@ async function startServer() {
       if (!apiKey) {
         throw new Error("GEMINI_API_KEY environment variable is required.");
       }
-      aiClient = new GoogleGenAI({ apiKey });
+      aiClient = new GoogleGenAI({ 
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build'
+          }
+        }
+      });
     }
     return aiClient;
   };
@@ -350,7 +357,7 @@ async function startServer() {
       }));
 
       const response = await getAI().models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: [
           { role: "user", parts: [{ text: promptContext }] },
           { role: "model", parts: [{ text: "Understood. I am the AI-Solutions virtual assistant." }] },
@@ -381,7 +388,11 @@ async function startServer() {
       res.json({ success: true, sessionId: currentSessionId, reply: aiText });
     } catch (err: any) {
       console.error(err);
-      res.status(500).json({ error: "AI failed to respond" });
+      const isAuthError = err.message?.includes('401') || err.message?.includes('invalid authentication') || err.message?.includes('API key');
+      const errorMsg = isAuthError 
+        ? "My Gemini API connection is currently unavailable. To enable me, please configure a valid Gemini API key in the AI Studio Settings menu."
+        : "I encountered an internal error processing that request.";
+      res.status(500).json({ error: errorMsg, details: err.message });
     }
   });
 
