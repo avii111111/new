@@ -32,7 +32,12 @@ export function AdminDashboard() {
         setData(json);
         setError('');
       } else {
-        setError('Forbidden: Admin access required');
+        let errMessage = 'Forbidden: Admin access required';
+        try {
+          const errData = await res.json();
+          if (errData && errData.error) errMessage = errData.error;
+        } catch(err) {}
+        setError(errMessage);
       }
     } catch (e) {
       setError('Failed to load dashboard data');
@@ -68,13 +73,16 @@ export function AdminDashboard() {
       setVerifying(true);
       try {
         await loginAsDemoAdmin();
+        setPassword('');
       } catch (err) {
         setPasswordError('Authentication failed. Please try again.');
+        setPassword('');
       } finally {
         setVerifying(false);
       }
     } else {
       setPasswordError('Invalid credentials. Please verify your administrator password.');
+      setPassword('');
     }
   };
 
