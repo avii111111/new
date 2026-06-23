@@ -78,11 +78,15 @@ export function AIChatAssistant() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed md:bottom-20 md:right-6 bottom-0 right-0 md:w-96 w-full max-h-[80vh] md:h-[500px] h-full bg-slate-900/40 backdrop-blur-xl md:rounded-2xl shadow-3xl flex flex-col overflow-hidden z-50 border border-white/10"
+            className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-[calc(100vw-32px)] sm:w-96 max-h-[80vh] sm:max-h-[600px] h-[500px] bg-slate-950/95 backdrop-blur-2xl rounded-2xl shadow-3xl flex flex-col overflow-hidden z-50 border border-white/10"
           >
             {/* Header */}
-            <div className="bg-secondary/20 backdrop-blur-md px-4 py-4 flex justify-between items-center text-white border-b border-white/10">
-              <div className="flex items-center space-x-3">
+            <div 
+              onClick={() => setIsOpen(false)}
+              className="bg-secondary/20 backdrop-blur-md px-4 py-4 flex justify-between items-center text-white border-b border-white/10 cursor-pointer hover:bg-white/5 transition-colors"
+              title="Click anywhere to minimize"
+            >
+              <div className="flex items-center space-x-3 select-none">
                 <div className="relative">
                   <div className="h-10 w-10 bg-secondary/20 rounded-full flex items-center justify-center">
                     <Bot className="h-6 w-6 text-white" />
@@ -95,7 +99,10 @@ export function AIChatAssistant() {
                 </div>
               </div>
               <button 
-                onClick={() => setIsOpen(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsOpen(false);
+                }}
                 className="text-white/70 hover:text-white transition-colors p-2 -mr-2 bg-white/5 hover:bg-white/10 rounded-full"
                 aria-label="Minimize"
               >

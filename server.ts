@@ -272,6 +272,44 @@ async function startServer() {
     }
   });
 
+  app.post("/api/testimonials", async (req, res) => {
+    try {
+      const { name, company, rating, comment } = req.body;
+      if (!name || rating === undefined || !comment) {
+        return res.status(400).json({ error: "Name, rating, and feedback comment are required." });
+      }
+      const ratingNum = parseInt(rating, 10);
+      if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+        return res.status(400).json({ error: "Rating must be an integer between 1 and 5." });
+      }
+
+      const newReview = {
+        name,
+        company: company || "",
+        rating: ratingNum,
+        comment,
+      };
+
+      try {
+        await db.insert(testimonials).values(newReview);
+      } catch (dbErr) {
+        console.log("[Fallback Store] save review to memory storage");
+      }
+
+      // Always push to static testimonials to ensure it shows immediately in fallback mode
+      staticTestimonials.push({
+        id: staticTestimonials.length + 1,
+        ...newReview,
+        createdAt: new Date()
+      });
+
+      res.status(201).json({ success: true, testimonial: newReview });
+    } catch (err: any) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to submit review." });
+    }
+  });
+
   // Newsletter Subscriptions
   app.post("/api/subscribe", async (req, res) => {
     try {
@@ -305,10 +343,9 @@ async function startServer() {
   // AI Chat Assistant Routes
   //
   app.post("/api/chat", async (req, res) => {
+    const { message, sessionId, uid } = req.body;
+    let currentSessionId = sessionId;
     try {
-      const { message, sessionId, uid } = req.body;
-      
-      let currentSessionId = sessionId;
 
       // Handle chat sessions and storage safely with DB + Memory fallback
       try {
@@ -387,12 +424,55 @@ async function startServer() {
 
       res.json({ success: true, sessionId: currentSessionId, reply: aiText });
     } catch (err: any) {
-      console.error(err);
-      const isAuthError = err.message?.includes('401') || err.message?.includes('invalid authentication') || err.message?.includes('API key');
-      const errorMsg = isAuthError 
-        ? "My Gemini API connection is currently unavailable. To enable me, please configure a valid Gemini API key in the AI Studio Settings menu."
-        : "I encountered an internal error processing that request.";
-      res.status(500).json({ error: errorMsg, details: err.message });
+      console.error("Gemini API error, activating responsive local fallback:", err);
+      
+      if (!currentSessionId) {
+        currentSessionId = Number(sessionId) || Date.now();
+      }
+      
+      const userMsg = String(message || "").toLowerCase().trim();
+      let aiText = "";
+      
+      if (userMsg.includes("hello") || userMsg.includes("hi") || userMsg.includes("hey") || userMsg.includes("greet")) {
+        aiText = "Hello! I'm the AI-Solutions virtual assistant. How can I help you transform your business today? We specialize in tailoring custom AI assistants, automated agentic workflows, and rapid software prototypes.";
+      } else if (userMsg.includes("cost") || userMsg.includes("price") || userMsg.includes("pricing") || userMsg.includes("billing") || userMsg.includes("pay")) {
+        aiText = "Our custom software development services and custom chatbot integrations are completely tailored to your organization's goals. For sandbox testing or personal use, standard Gemini API keys are completely free with zero billing requirements! To discuss enterprise options, would you like to check out our **Schedule Demo** page or fill out the form on our **Contact** page?";
+      } else if (userMsg.includes("help") || userMsg.includes("useful") || userMsg.includes("what can you do") || userMsg.includes("services")) {
+        aiText = "As your AI digital companion, I can explore everything AI-Solutions has to offer! I can:\n\n- File inquiries for our **AI Software Development** team.\n- Automate workflow stages with **Agentic Workflows**.\n- Register you for local and online **AI Events**.\n- Guide you to schedule a complete live presentation.\n\nWhat would you like to explore first?";
+      } else if (userMsg.includes("demo") || userMsg.includes("book") || userMsg.includes("meet") || userMsg.includes("schedule")) {
+        aiText = "We would love to schedule a personal demonstration of our platform! You can choose an available slot directly on our [Schedule Demo](/schedule-demo) page, or leave a message for our Sunderland consultancy team on our [Contact](/contact) page.";
+      } else {
+        aiText = `Thank you for reaching out! AI-Solutions provides premium custom LLM integrations, workspace automation flow design, and rapid visual prototyping services.
+
+Your app's Gemini API is currently offline because the configured API Key inside the Settings menu is either missing, has expired, or is an OAuth session token instead of a permanent developer API Key starting with 'AIzaSy'.
+
+**Tip to configure for Free:**
+1. Visit [Google AI Studio](https://aistudio.google.com/) and register for free.
+2. Click **Create API Key** and copy your permanent API Key starting with **'AIzaSy'**.
+3. Paste it under **GEMINI_API_KEY** in your top-right Settings menu (Secrets panel).
+
+In the meantime, feel free to ask about our custom software development, agentic workflows, or Sunderland events!`;
+      }
+
+      // Save fallback message to history so conversation continues properly
+      try {
+        await db.insert(chatMessages).values({
+          sessionId: currentSessionId,
+          role: "assistant",
+          content: aiText,
+        });
+      } catch (dbErr) {
+        // Safe to ignore, stored in memory anyway
+      }
+
+      memoryChatMessages.push({
+        sessionId: currentSessionId,
+        role: "assistant",
+        content: aiText,
+        createdAt: new Date()
+      });
+
+      res.json({ success: true, sessionId: currentSessionId, reply: aiText });
     }
   });
 
