@@ -56,9 +56,9 @@ export function Services() {
   return (
     <div className="pt-12 pb-24">
       {/* Header */}
-      <div className="bg-transparent text-white py-20 px-4 text-center">
-        <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">Our AI Solutions</h1>
-        <p className="text-lg text-blue-100 max-w-2xl mx-auto">
+      <div className="bg-transparent text-slate-900 py-20 px-4 text-center">
+        <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 text-slate-900">Our AI Solutions</h1>
+        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
           Comprehensive AI services designed to enhance digital employee experience and accelerate business growth.
         </p>
       </div>
@@ -67,22 +67,22 @@ export function Services() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12">
         <div className="grid md:grid-cols-2 gap-8">
           {services.map((service, idx) => (
-            <div key={idx} className="bg-white/5 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/10 hover:shadow-2xl transition-shadow flex flex-col">
+            <div key={idx} className="bg-white rounded-2xl p-8 shadow-md border border-slate-200/80 hover:border-orange-500/20 hover:shadow-lg transition-all duration-300 flex flex-col">
               <div className="flex items-center mb-6">
-                <div className="h-14 w-14 rounded-xl bg-blue-500/10 flex items-center justify-center mr-4">
+                <div className="h-14 w-14 rounded-xl bg-orange-500/10 flex items-center justify-center mr-4">
                   <service.icon className="h-7 w-7 text-secondary" />
                 </div>
-                <h2 className="text-2xl font-bold text-white">{service.title}</h2>
+                <h2 className="text-2xl font-bold text-slate-900">{service.title}</h2>
               </div>
               <ul className="space-y-3 mb-8 flex-1">
                 {service.features.map((feature, fIdx) => (
                   <li key={fIdx} className="flex items-start">
                     <ChevronRight className="h-5 w-5 text-secondary flex-shrink-0 mt-0.5 mr-2" />
-                    <span className="text-slate-400">{feature}</span>
+                    <span className="text-slate-600">{feature}</span>
                   </li>
                 ))}
               </ul>
-              <Link to={`/schedule-demo?service=${service.id}`} className="mt-auto w-full py-3 px-4 bg-transparent text-white font-medium rounded-lg text-center border border-white/20 hover:bg-secondary/90 hover:text-white transition-colors">
+              <Link to={`/schedule-demo?service=${service.id}`} className="mt-auto w-full py-3 px-4 bg-slate-50 text-slate-800 font-medium rounded-lg text-center border border-slate-200 hover:bg-secondary hover:text-white hover:border-secondary transition-all cursor-pointer">
                 Request Demo
               </Link>
             </div>

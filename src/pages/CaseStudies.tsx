@@ -37,31 +37,31 @@ export function CaseStudies() {
     <div className="pt-12 pb-24 bg-transparent min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 mt-10">
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-6">Case Studies</h1>
-          <p className="text-lg text-slate-400">
+          <h1 className="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-6">Case Studies</h1>
+          <p className="text-lg text-slate-600">
             See how organizations across various industries have transformed their operations and digital employee experience with AI-Solutions.
           </p>
         </div>
 
         <div className="space-y-12">
           {cases.map((cs, idx) => (
-            <div key={idx} className="bg-white/5 backdrop-blur-md rounded-2xl shadow-sm border border-white/10 overflow-hidden flex flex-col md:flex-row">
-              <div className="md:w-1/3 bg-white/5 backdrop-blur-md border-r border-white/10 p-8 text-white flex flex-col justify-center">
-                <span className="text-secondary font-semibold tracking-wider uppercase text-sm mb-2">{cs.industry}</span>
-                <h2 className="text-3xl font-display font-bold">{cs.company}</h2>
+            <div key={idx} className="bg-white rounded-2xl shadow-md border border-slate-200/80 overflow-hidden flex flex-col md:flex-row hover:border-orange-500/20 hover:shadow-lg transition-all duration-300">
+              <div className="md:w-1/3 bg-slate-50/50 p-8 text-slate-900 flex flex-col justify-center border-b md:border-b-0 md:border-r border-slate-200/85">
+                <span className="text-secondary font-semibold tracking-wider uppercase text-xs mb-2">{cs.industry}</span>
+                <h2 className="text-2xl font-display font-bold text-slate-900">{cs.company}</h2>
               </div>
               <div className="md:w-2/3 p-8 grid md:grid-cols-3 gap-8">
                 <div>
-                  <h3 className="font-bold text-white mb-2 border-b border-white/10 pb-2">The Challenge</h3>
-                  <p className="text-sm text-slate-400">{cs.challenge}</p>
+                  <h3 className="font-bold text-slate-900 mb-2 border-b border-slate-100 pb-2 text-sm uppercase tracking-wide">The Challenge</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">{cs.challenge}</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-white mb-2 border-b border-white/10 pb-2">AI Solution</h3>
-                  <p className="text-sm text-slate-400">{cs.solution}</p>
+                  <h3 className="font-bold text-slate-900 mb-2 border-b border-slate-100 pb-2 text-sm uppercase tracking-wide">AI Solution</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">{cs.solution}</p>
                 </div>
                 <div>
-                  <h3 className="font-bold text-secondary mb-2 border-b border-white/10 pb-2">Business Impact</h3>
-                  <p className="text-sm font-semibold text-white">{cs.impact}</p>
+                  <h3 className="font-bold text-secondary mb-2 border-b border-slate-100 pb-2 text-sm uppercase tracking-wide">Business Impact</h3>
+                  <p className="text-sm font-semibold text-slate-900 leading-relaxed">{cs.impact}</p>
                 </div>
               </div>
             </div>
@@ -69,7 +69,7 @@ export function CaseStudies() {
         </div>
 
         <div className="mt-16 text-center">
-          <Link to="/schedule-demo" className="inline-flex items-center px-8 py-4 bg-secondary text-white font-medium rounded-full hover:bg-secondary/90 transition border border-secondary/30 shadow-lg shadow-secondary/20 transition-all hover:shadow-xl">
+          <Link to="/schedule-demo" className="inline-flex items-center px-8 py-4 bg-secondary text-white font-medium rounded-full hover:bg-secondary/90 transition border border-secondary/30 shadow-lg shadow-secondary/20 transition-all hover:shadow-xl cursor-pointer">
             Start Your Success Story
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
