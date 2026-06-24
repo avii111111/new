@@ -54,7 +54,11 @@ async function startServer() {
   
   const staticEvents: any[] = [
     { id: 1, title: "AI Transforming the Workplace 2026", description: "Discover how top companies harness agentic AI systems to transform daily work and scale operations.", location: "London, UK & Virtual", date: "2026-09-15" },
-    { id: 2, title: "Prototyping with AI Masterclass", description: "A comprehensive hands-on workshop focused on leveraging LLMs to build rapid MVPs and software tools.", location: "Online", date: "2026-10-02" }
+    { id: 2, title: "Prototyping with AI Masterclass", description: "A comprehensive hands-on workshop focused on leveraging LLMs to build rapid MVPs and software tools.", location: "Online", date: "2026-10-02" },
+    { id: 3, title: "Enterprise AI Summit 2026", description: "Our flagship annual summit focusing on agentic workflows, custom automation, and local digital evolution.", location: "Sunderland, UK", date: "2026-03-10" },
+    { id: 4, title: "Generative AI in Retail Roundtable", description: "A private executive roundtable discussing personalization engines, dynamic inventory control, and autonomous checkout.", location: "Online", date: "2026-01-22" },
+    { id: 5, title: "Custom LLM Fine-Tuning Workshop", description: "A technical deep-dive into self-hosting, fine-tuning, and setting up vector databases securely in high-privacy sectors.", location: "Newcastle, UK", date: "2025-11-14" },
+    { id: 6, title: "Sunderland Business Tech Expo", description: "Showcasing automation strategies for SME businesses looking to transition their support queues and bookkeeping to AI-led platforms.", location: "Sunderland, UK", date: "2025-09-28" }
   ];
 
   const staticTestimonials: any[] = [
@@ -596,8 +600,12 @@ In the meantime, feel free to ask about our custom software development, agentic
          const currentEvents = await db.select().from(events);
          if (currentEvents.length === 0) {
            await db.insert(events).values([
-             { title: "AI Transforming the Workplace 2026", description: "Learn how the top 500 companies use AI to scale.", location: "London, UK", date: "2026-09-15" },
-             { title: "Prototyping with AI masterclass", description: "A hands-on workshop to build an MVP in a weekend.", location: "Online", date: "2026-10-02" },
+             { title: "AI Transforming the Workplace 2026", description: "Discover how top companies harness agentic AI systems to transform daily work and scale operations.", location: "London, UK & Virtual", date: "2026-09-15" },
+             { title: "Prototyping with AI Masterclass", description: "A comprehensive hands-on workshop focused on leveraging LLMs to build rapid MVPs and software tools.", location: "Online", date: "2026-10-02" },
+             { title: "Enterprise AI Summit 2026", description: "Our flagship annual summit focusing on agentic workflows, custom automation, and local digital evolution.", location: "Sunderland, UK", date: "2026-03-10" },
+             { title: "Generative AI in Retail Roundtable", description: "A private executive roundtable discussing personalization engines, dynamic inventory control, and autonomous checkout.", location: "Online", date: "2026-01-22" },
+             { title: "Custom LLM Fine-Tuning Workshop", description: "A technical deep-dive into self-hosting, fine-tuning, and setting up vector databases securely in high-privacy sectors.", location: "Newcastle, UK", date: "2025-11-14" },
+             { title: "Sunderland Business Tech Expo", description: "Showcasing automation strategies for SME businesses looking to transition their support queues and bookkeeping to AI-led platforms.", location: "Sunderland, UK", date: "2025-09-28" }
            ]);
          }
 

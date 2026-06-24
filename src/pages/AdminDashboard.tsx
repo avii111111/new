@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthProvider';
+import { motion } from 'motion/react';
 import { Bar, Pie, Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement
 } from 'chart.js';
-import { Users, FileText, Calendar, MessageSquare, Database, LogOut, Lock, Key, ShieldAlert, Eye, EyeOff, ChevronLeft } from 'lucide-react';
+import { Users, FileText, Calendar, MessageSquare, Database, LogOut, Lock, Key, ShieldAlert, Eye, EyeOff, ChevronLeft, Download } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);
 
@@ -86,38 +87,110 @@ export function AdminDashboard() {
     }
   };
 
+  const handleExportCSV = () => {
+    if (!data || !data.demos || data.demos.length === 0) {
+      alert("No demo requests available to export.");
+      return;
+    }
+
+    const headers = ["ID", "Name", "Email", "Phone", "Company", "Country", "Requested Service", "Requirements", "Date", "Status", "Created At"];
+
+    const escapeCSVValue = (val: any) => {
+      if (val === null || val === undefined) return "";
+      const str = String(val);
+      if (/[",\n\r]/.test(str)) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    const rows = data.demos.map((d: any) => [
+      d.id,
+      d.name,
+      d.email,
+      d.phone || "",
+      d.company || "",
+      d.country || "",
+      d.service,
+      d.requirements || "",
+      d.date,
+      d.status,
+      d.createdAt ? new Date(d.createdAt).toLocaleString() : ""
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row: any[]) => row.map(escapeCSVValue).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `scheduled_demo_requests_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (!user) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center bg-transparent px-4">
-        <div className="bg-white border border-slate-200 p-8 sm:p-10 rounded-2xl shadow-2xl max-w-md w-full relative overflow-hidden transition-all duration-300">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-xl rounded-full pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-500/5 blur-xl rounded-full pointer-events-none"></div>
+      <div className="min-h-screen pt-24 pb-16 flex items-center justify-center bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.06),transparent_50%)] bg-slate-50/50 px-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="bg-white border border-slate-200/80 p-8 sm:p-10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.04)] max-w-md w-full relative overflow-hidden font-sans"
+        >
+          {/* Ambient light glow spots */}
+          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-secondary/10 to-accent/5 blur-3xl rounded-full pointer-events-none"></div>
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-gradient-to-tr from-accent/5 to-secondary/10 blur-3xl rounded-full pointer-events-none"></div>
           
-          <div className="relative z-10 animate-fade-in font-sans">
+          <div className="relative z-10">
             <form onSubmit={handlePasswordSubmit} className="text-left">
-              <div className="text-center mb-6">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-secondary to-accent flex items-center justify-center shadow-lg shadow-orange-500/20 mb-4 animate-bounce-slow">
-                  <Lock className="h-8 w-8 text-white" />
+              {/* Security Lock Badge */}
+              <div className="text-center mb-8">
+                <div className="relative mx-auto w-24 h-24 flex items-center justify-center mb-5">
+                  {/* Rotating Concentric Outer Ring 1 */}
+                  <div className="absolute inset-0 border-2 border-dashed border-secondary/20 rounded-full animate-[spin_40s_linear_infinite]"></div>
+                  {/* Rotating Concentric Outer Ring 2 */}
+                  <div className="absolute inset-2 border border-slate-200 rounded-full animate-[spin_20s_linear_infinite_reverse]"></div>
+                  {/* Pulsing ring */}
+                  <div className="absolute inset-4 bg-secondary/5 rounded-full animate-ping opacity-75"></div>
+                  {/* Solid premium circle */}
+                  <div className="absolute inset-4 bg-gradient-to-tr from-secondary to-orange-500 rounded-full shadow-lg shadow-secondary/30 flex items-center justify-center">
+                    <Lock className="h-7 w-7 text-white" />
+                  </div>
                 </div>
-                <h1 className="text-3xl font-display font-bold text-slate-900 mb-2 tracking-tight">Admin Gateway</h1>
-                <p className="text-slate-600 text-sm max-w-xs mx-auto leading-relaxed text-center">
-                  Enter the secure system access code below to unseal the reporting dashboard.
+
+                <h1 className="text-3xl font-display font-extrabold text-slate-900 tracking-tight mb-2">
+                  System Gatekeeper
+                </h1>
+                <p className="text-slate-500 text-sm max-w-xs mx-auto leading-relaxed">
+                  Enter the secure administrator access key to decrypt and unseal the analytical dashboard.
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-2 font-display">
-                    Security Password
-                  </label>
-                  <div className="relative">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 font-display">
+                      Security Password
+                    </label>
+                    <span className="text-[10px] font-medium text-slate-400 font-mono uppercase">
+                      Required
+                    </span>
+                  </div>
+                  
+                  <div className="relative group">
                     <input
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       autoFocus
-                      className="w-full bg-slate-50 border border-slate-200 focus:border-secondary focus:ring-1 focus:ring-secondary rounded-xl px-4 py-3.5 pr-12 text-slate-800 placeholder-slate-400 font-sans focus:outline-none transition-all duration-200"
+                      className="w-full bg-slate-50/50 border border-slate-200 group-hover:border-slate-300 focus:border-secondary focus:ring-4 focus:ring-secondary/10 rounded-2xl px-4 py-3.5 pr-12 text-slate-800 placeholder-slate-400 font-mono tracking-widest text-lg focus:outline-none transition-all duration-300 shadow-inner"
                     />
                     <button
                       type="button"
@@ -130,40 +203,54 @@ export function AdminDashboard() {
                 </div>
 
                 {passwordError && (
-                  <div className="p-3.5 bg-red-50 border border-red-100 rounded-xl">
-                    <span className="text-sm text-red-600 font-sans">{passwordError}</span>
-                  </div>
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-3.5 bg-red-50 border border-red-100 rounded-xl flex items-start space-x-2.5"
+                  >
+                    <ShieldAlert className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                    <span className="text-xs text-red-700 font-medium leading-relaxed">{passwordError}</span>
+                  </motion.div>
                 )}
 
                 <div className="pt-2">
                   <button
                     type="submit"
                     disabled={verifying}
-                    className="w-full py-3.5 px-4 bg-secondary hover:bg-orange-600 disabled:bg-orange-300 text-white rounded-xl font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/35 transition-all duration-300 flex items-center justify-center space-x-2 border border-secondary/30 cursor-pointer"
+                    className="w-full py-3.5 px-4 bg-gradient-to-r from-secondary to-orange-500 hover:from-orange-600 hover:to-orange-500 disabled:from-orange-300 disabled:to-orange-200 text-white rounded-2xl font-bold shadow-xl shadow-secondary/20 hover:shadow-secondary/35 transition-all duration-300 flex items-center justify-center space-x-2 border border-secondary/10 cursor-pointer text-sm"
                   >
-                    <Key className="h-5 w-5 text-white" />
-                    <span>{verifying ? "Authenticating..." : "Enter as Admin"}</span>
+                    <Key className="h-4.5 w-4.5 text-white" />
+                    <span>{verifying ? "Authorizing Security..." : "Unlock Dashboard"}</span>
                   </button>
                 </div>
 
                 <div className="flex items-center my-6">
-                  <div className="flex-grow border-t border-slate-200"></div>
-                  <span className="px-3 text-xs text-slate-400 font-medium uppercase tracking-widest bg-transparent">or</span>
-                  <div className="flex-grow border-t border-slate-200"></div>
+                  <div className="flex-grow border-t border-slate-150"></div>
+                  <span className="px-3.5 text-[10px] text-slate-400 font-bold uppercase tracking-widest bg-transparent">
+                    Identity Provider
+                  </span>
+                  <div className="flex-grow border-t border-slate-150"></div>
                 </div>
 
                 <button 
                   type="button"
                   onClick={login} 
-                  className="w-full py-3 px-4 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 rounded-xl font-medium transition-all duration-200 border border-slate-200 flex items-center justify-center space-x-2 cursor-pointer shadow-sm"
+                  className="w-full py-3 px-4 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 rounded-2xl font-semibold transition-all duration-300 border border-slate-200 hover:border-slate-300 flex items-center justify-center space-x-2.5 cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
                 >
-                  <Database className="h-5 w-5 text-orange-500" />
-                  <span>Sign in with Google</span>
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                    <g transform="matrix(1, 0, 0, 1, 0, 0)">
+                      <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28 -0.96,2.37 -2.04,3.1v2.57h3.3c1.93,-1.78 3.04,-4.4 3.04,-7.48c0,-0.61 -0.06,-1.2 -0.16,-1.78Z" fill="#4285f4" />
+                      <path d="M12,20.62c2.43,0 4.47,-0.8 5.96,-2.18l-3.3,-2.57c-0.92,0.61 -2.1,0.98 -3.51,0.98c-2.35,0 -4.33,-1.59 -5.04,-3.72H2.69v2.66c1.49,2.96 4.54,4.83 8.16,4.83Z" fill="#34a853" />
+                      <path d="M6.96,13.13c-0.18,-0.54 -0.28,-1.11 -0.28,-1.7c0,-0.59 0.1,-1.16 0.28,-1.7V7.07H2.69c-0.61,1.21 -0.96,2.58 -0.96,4.03c0,1.45 0.35,2.82 0.96,4.03l4.27,-3.13Z" fill="#fbbc05" />
+                      <path d="M12,6.38c1.32,0 2.51,0.45 3.44,1.35l2.58,-2.58C16.46,3.68 14.43,3 12,3C8.38,3 5.33,4.87 3.84,7.83l4.27,3.13c0.71,-2.13 2.69,-3.72 5.04,-3.72Z" fill="#ea4335" />
+                    </g>
+                  </svg>
+                  <span>Google single sign-on</span>
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -265,7 +352,13 @@ export function AdminDashboard() {
           <div className="bg-white rounded-xl shadow-md border border-slate-200/80 overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-150 flex justify-between items-center">
               <h3 className="font-bold text-slate-900 font-display text-lg">Recent Demo Bookings</h3>
-              <button className="text-xs font-semibold text-secondary hover:underline cursor-pointer">Export CSV</button>
+              <button 
+                onClick={handleExportCSV}
+                className="text-xs font-semibold text-secondary hover:text-orange-600 transition flex items-center space-x-1.5 cursor-pointer bg-orange-50 hover:bg-orange-100/80 px-3 py-1.5 rounded-lg border border-orange-100/60"
+              >
+                <Download className="h-3.5 w-3.5" />
+                <span>Export CSV</span>
+              </button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
