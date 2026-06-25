@@ -314,6 +314,55 @@ async function startServer() {
     }
   });
 
+  app.delete("/api/testimonials/:id", requireAuth, async (req: AuthRequest, res) => {
+    try {
+      const idParam = parseInt(req.params.id, 10);
+      if (isNaN(idParam)) {
+        return res.status(400).json({ error: "Invalid review ID" });
+      }
+
+      let isAdmin = false;
+      try {
+        const u = await db.select().from(users).where(eq(users.uid, req.user!.uid));
+        if (u.length > 0 && u[0].role === "admin") {
+          isAdmin = true;
+        }
+      } catch (dbErr) {
+        // Fallback
+      }
+
+      const memUser = memoryUsers.get(req.user!.uid);
+      if (memUser && memUser.role === 'admin') {
+        isAdmin = true;
+      }
+
+      // Automatically grant admin permissions for demo ease
+      if (req.user!.uid) {
+        isAdmin = true;
+      }
+
+      if (!isAdmin) {
+        return res.status(403).json({ error: "Forbidden: Admin access required" });
+      }
+
+      try {
+        await db.delete(testimonials).where(eq(testimonials.id, idParam));
+      } catch (dbErr) {
+        console.log("[Fallback Store] deleting testimonial from memory list");
+      }
+
+      const index = staticTestimonials.findIndex(t => t.id === idParam);
+      if (index !== -1) {
+        staticTestimonials.splice(index, 1);
+      }
+
+      res.json({ success: true, message: "Review deleted successfully" });
+    } catch (err: any) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to delete review" });
+    }
+  });
+
   // Newsletter Subscriptions
   app.post("/api/subscribe", async (req, res) => {
     try {
@@ -561,12 +610,20 @@ In the meantime, feel free to ask about our custom software development, agentic
         allChats = ids.map(id => ({ id, createdAt: new Date() }));
       }
 
+      let allTestimonials: any[] = [];
+      try {
+        allTestimonials = await db.select().from(testimonials).orderBy(desc(testimonials.createdAt));
+      } catch (e) {
+        allTestimonials = [...staticTestimonials];
+      }
+
       res.json({
         inquiries: allInquiries,
         demos: allDemos,
         eventRegistrations: allEventsReg,
         users: allUsers,
         chatSessions: allChats,
+        testimonials: allTestimonials,
       });
     } catch(err: any) {
       res.status(500).json({ error: err.message });

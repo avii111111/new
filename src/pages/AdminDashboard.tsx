@@ -5,7 +5,7 @@ import { Bar, Pie, Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement
 } from 'chart.js';
-import { Users, FileText, Calendar, MessageSquare, Database, LogOut, Lock, Key, ShieldAlert, Eye, EyeOff, ChevronLeft, Download } from 'lucide-react';
+import { Users, FileText, Calendar, MessageSquare, Database, LogOut, Lock, Key, ShieldAlert, Eye, EyeOff, ChevronLeft, Download, Star, Trash2 } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);
 
@@ -21,6 +21,27 @@ export function AdminDashboard() {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [verifying, setVerifying] = useState(false);
+
+  const handleDeleteReview = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this review?")) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/testimonials/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchStats();
+      } else {
+        const errData = await res.json();
+        alert(errData.error || "Failed to delete review.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("A network error occurred. Please try again.");
+    }
+  };
 
   const fetchStats = async () => {
     if (!token) return;
@@ -284,6 +305,11 @@ export function AdminDashboard() {
   
   const countryCount: Record<string, number> = {};
   data.inquiries.forEach((i: any) => { if(i.country) countryCount[i.country] = (countryCount[i.country] || 0) + 1; });
+
+  const totalReviews = data.testimonials ? data.testimonials.length : 0;
+  const avgRating = totalReviews > 0 
+    ? (data.testimonials.reduce((sum: number, t: any) => sum + t.rating, 0) / totalReviews).toFixed(1)
+    : "0.0";
   
   const barData = {
     labels: Object.keys(serviceCount),
@@ -317,12 +343,13 @@ export function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
         
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           {[
             { label: 'Inquiries', value: data.inquiries.length, icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50/50' },
             { label: 'Demo Reqs', value: data.demos.length, icon: Calendar, color: 'text-purple-500', bg: 'bg-purple-50/50' },
             { label: 'Event Regs', value: data.eventRegistrations.length, icon: Users, color: 'text-green-500', bg: 'bg-green-50/50' },
             { label: 'AI Sessions', value: data.chatSessions.length, icon: MessageSquare, color: 'text-orange-500', bg: 'bg-orange-50/50' },
+            { label: 'Avg Rating', value: `${avgRating} ★`, icon: Star, color: 'text-amber-500', bg: 'bg-amber-50/50' },
             { label: 'Customers', value: data.users.length, icon: Database, color: 'text-slate-500', bg: 'bg-slate-50/50' }
           ].map((kpi, i) => (
             <div key={i} className="bg-white p-6 rounded-xl shadow-md border border-slate-200/80 flex flex-col justify-center items-center text-center hover:scale-[1.01] transition-all">
@@ -393,7 +420,9 @@ export function AdminDashboard() {
 
           <div className="bg-white rounded-xl shadow-md border border-slate-200/80 overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-150 flex justify-between items-center bg-transparent">
-              <h3 className="font-bold text-slate-900 font-display text-lg">Recent Inquiries</h3>
+              <div>
+                <h3 className="font-bold text-slate-900 font-display text-lg">Recent Inquiries</h3>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
@@ -419,6 +448,74 @@ export function AdminDashboard() {
                     </tr>
                   ))}
                   {data.inquiries.length === 0 && <tr><td colSpan={4} className="px-6 py-4 text-center text-slate-500">No data available</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Website Reviews & Ratings Section */}
+          <div className="bg-white rounded-xl shadow-md border border-slate-200/80 overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-150 flex justify-between items-center bg-transparent">
+              <div>
+                <h3 className="font-bold text-slate-900 font-display text-lg">Website Reviews & Ratings</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Manage user ratings and feedback testimonials displayed on the contact page</p>
+              </div>
+            </div>
+
+            {/* Reviews Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-700">
+                  <tr>
+                    <th className="px-6 py-3 font-semibold">Customer</th>
+                    <th className="px-6 py-3 font-semibold">Company / Role</th>
+                    <th className="px-6 py-3 font-semibold">Rating</th>
+                    <th className="px-6 py-3 font-semibold">Comment</th>
+                    <th className="px-6 py-3 font-semibold">Date</th>
+                    <th className="px-6 py-3 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.testimonials && data.testimonials.map((t: any) => (
+                    <tr key={t.id} className="hover:bg-slate-50/50 transition">
+                      <td className="px-6 py-4 font-semibold text-slate-900">{t.name}</td>
+                      <td className="px-6 py-4 text-slate-600">{t.company || <span className="text-slate-400 italic">None</span>}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-0.5">
+                          {Array.from({ length: 5 }).map((_, idx) => (
+                            <Star
+                              key={idx}
+                              className={`h-3.5 w-3.5 ${
+                                idx < t.rating ? "text-amber-400 fill-amber-400" : "text-slate-200"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-slate-600 max-w-xs truncate" title={t.comment}>
+                        {t.comment}
+                      </td>
+                      <td className="px-6 py-4 text-slate-500 text-xs">
+                        {t.createdAt ? new Date(t.createdAt).toLocaleDateString() : "Static Seed"}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => handleDeleteReview(t.id)}
+                          className="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition cursor-pointer"
+                          title="Delete review"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {(!data.testimonials || data.testimonials.length === 0) && (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-8 text-center text-slate-500 italic">
+                        No reviews submitted yet.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
