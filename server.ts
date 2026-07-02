@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { requireAuth, AuthRequest } from "./src/middleware/auth.ts";
 import { db } from "./src/db/index.ts";
@@ -17,35 +16,6 @@ import {
 import { eq, desc } from "drizzle-orm";
 import { getOrCreateUser } from "./src/db/users.ts";
 import { GoogleGenAI } from "@google/genai";
-
-// PHP-to-Bootstrap-HTML Navigation Header Compiler Helper
-function getHeader(currentPage: string) {
-  let header = fs.readFileSync(path.join(process.cwd(), "php-mysql", "header.php"), "utf8");
-  header = header.replace(/<\?php[\s\S]*?\?>/, ""); // Remove first session/page variable assignment block
-  
-  // Cleanly replace PHP active navigation checks
-  const pages = ["index.php", "services.php", "about.php", "events.php", "contact.php", "admin.php"];
-  pages.forEach(p => {
-    const regex = new RegExp(`<\\?\\?php\\s+echo\\s+\\(\\$current_page\\s*==\\s*'${p}'\\)\\s*\\?\\s*'active'\\s*:\\s*'';\\s*\\?\\?>`, "g");
-    header = header.replace(regex, currentPage === p ? "active" : "");
-  });
-
-  // Inject a return link to toggle back to the React version
-  header = header.replace(
-    `<a href="schedule_demo.php" class="btn btn-orange">Schedule Demo</a>`,
-    `<a href="/" class="btn btn-outline-custom text-sm py-2 px-3.5 me-2 border-orange-200 text-orange-700 bg-orange-50/50 hover:bg-orange-100 transition-all" style="border-radius: 50px;">React Version</a>
-     <a href="schedule_demo.php" class="btn btn-orange">Schedule Demo</a>`
-  );
-  
-  return header;
-}
-
-// PHP-to-Bootstrap-HTML Footer Compiler Helper
-function getFooter() {
-  let footer = fs.readFileSync(path.join(process.cwd(), "php-mysql", "footer.php"), "utf8");
-  footer = footer.replace(/<\?php[\s\S]*?\?>/g, ""); // Strip any PHP tags inside footer
-  return footer;
-}
 
 async function startServer() {
   const app = express();
