@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { requireAuth, AuthRequest } from "./src/middleware/auth.ts";
 import { db } from "./src/db/index.ts";
@@ -17,11 +18,41 @@ import { eq, desc } from "drizzle-orm";
 import { getOrCreateUser } from "./src/db/users.ts";
 import { GoogleGenAI } from "@google/genai";
 
+// PHP-to-Bootstrap-HTML Navigation Header Compiler Helper
+function getHeader(currentPage: string) {
+  let header = fs.readFileSync(path.join(process.cwd(), "php-mysql", "header.php"), "utf8");
+  header = header.replace(/<\?php[\s\S]*?\?>/, ""); // Remove first session/page variable assignment block
+  
+  // Cleanly replace PHP active navigation checks
+  const pages = ["index.php", "services.php", "about.php", "events.php", "contact.php", "admin.php"];
+  pages.forEach(p => {
+    const regex = new RegExp(`<\\?\\?php\\s+echo\\s+\\(\\$current_page\\s*==\\s*'${p}'\\)\\s*\\?\\s*'active'\\s*:\\s*'';\\s*\\?\\?>`, "g");
+    header = header.replace(regex, currentPage === p ? "active" : "");
+  });
+
+  // Inject a return link to toggle back to the React version
+  header = header.replace(
+    `<a href="schedule_demo.php" class="btn btn-orange">Schedule Demo</a>`,
+    `<a href="/" class="btn btn-outline-custom text-sm py-2 px-3.5 me-2 border-orange-200 text-orange-700 bg-orange-50/50 hover:bg-orange-100 transition-all" style="border-radius: 50px;">React Version</a>
+     <a href="schedule_demo.php" class="btn btn-orange">Schedule Demo</a>`
+  );
+  
+  return header;
+}
+
+// PHP-to-Bootstrap-HTML Footer Compiler Helper
+function getFooter() {
+  let footer = fs.readFileSync(path.join(process.cwd(), "php-mysql", "footer.php"), "utf8");
+  footer = footer.replace(/<\?php[\s\S]*?\?>/g, ""); // Strip any PHP tags inside footer
+  return footer;
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
   // Lazy-initialize Gemini API client to prevent startup crashes if GEMINI_API_KEY is empty/missing
   let aiClient: GoogleGenAI | null = null;
@@ -160,8 +191,8 @@ async function startServer() {
       };
 
       try {
-        const result = await db.insert(inquiries).values(inquiryData).returning();
-        res.json({ success: true, inquiry: result[0] });
+        const [resHeader] = await db.insert(inquiries).values(inquiryData);
+        res.json({ success: true, inquiry: { id: resHeader.insertId, ...inquiryData } });
       } catch (dbErr) {
         console.log("[Fallback Store] save inquiry internally");
         const saved = { id: memoryInquiries.length + 1, ...inquiryData };
@@ -215,8 +246,8 @@ async function startServer() {
       };
 
       try {
-        const result = await db.insert(demoRequests).values(demoData).returning();
-        res.json({ success: true, request: result[0] });
+        const [resHeader] = await db.insert(demoRequests).values(demoData);
+        res.json({ success: true, request: { id: resHeader.insertId, ...demoData } });
       } catch (dbErr) {
         console.log("[Fallback Store] save demo request internally");
         const saved = { id: memoryDemoRequests.length + 1, ...demoData };
@@ -403,8 +434,8 @@ async function startServer() {
       // Handle chat sessions and storage safely with DB + Memory fallback
       try {
         if (!currentSessionId) {
-          const session = await db.insert(chatSessions).values({ uid: uid || "anonymous" }).returning();
-          currentSessionId = session[0].id;
+          const [resHeader] = await db.insert(chatSessions).values({ uid: uid || "anonymous" });
+          currentSessionId = resHeader.insertId;
         }
 
         // Save user message

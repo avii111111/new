@@ -1,85 +1,84 @@
-import { relations } from 'drizzle-orm';
-import { integer, pgTable, serial, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { mysqlTable, int, varchar, text, timestamp } from 'drizzle-orm/mysql-core';
 
-export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  uid: text('uid').notNull().unique(), // Firebase Auth UID
-  email: text('email').notNull(),
-  name: text('name'),
-  phone: text('phone'),
-  company: text('company'),
-  country: text('country'),
-  role: text('role').default('user'),
+export const users = mysqlTable('users', {
+  id: int('id').primaryKey().autoincrement(),
+  uid: varchar('uid', { length: 128 }).notNull().unique(), // Firebase Auth UID
+  email: varchar('email', { length: 255 }).notNull(),
+  name: varchar('name', { length: 255 }),
+  phone: varchar('phone', { length: 50 }),
+  company: varchar('company', { length: 255 }),
+  country: varchar('country', { length: 100 }),
+  role: varchar('role', { length: 50 }).default('user'),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const inquiries = pgTable('inquiries', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id),
-  name: text('name').notNull(),
-  email: text('email').notNull(),
-  phone: text('phone'),
-  company: text('company'),
-  country: text('country'),
-  jobTitle: text('job_title'),
-  type: text('type').notNull(),
+export const inquiries = mysqlTable('inquiries', {
+  id: int('id').primaryKey().autoincrement(),
+  userId: int('user_id').references(() => users.id),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  phone: varchar('phone', { length: 50 }),
+  company: varchar('company', { length: 255 }),
+  country: varchar('country', { length: 100 }),
+  jobTitle: varchar('job_title', { length: 255 }),
+  type: varchar('type', { length: 100 }).notNull(),
   message: text('message').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const demoRequests = pgTable('demo_requests', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id),
-  name: text('name').notNull(),
-  email: text('email').notNull(),
-  phone: text('phone'),
-  company: text('company'),
-  country: text('country'),
-  service: text('service').notNull(),
+export const demoRequests = mysqlTable('demo_requests', {
+  id: int('id').primaryKey().autoincrement(),
+  userId: int('user_id').references(() => users.id),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  phone: varchar('phone', { length: 50 }),
+  company: varchar('company', { length: 255 }),
+  country: varchar('country', { length: 100 }),
+  service: varchar('service', { length: 255 }).notNull(),
   requirements: text('requirements'),
-  date: text('date').notNull(),
-  status: text('status').default('pending'),
+  date: varchar('date', { length: 100 }).notNull(),
+  status: varchar('status', { length: 50 }).default('pending'),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const events = pgTable('events', {
-  id: serial('id').primaryKey(),
-  title: text('title').notNull(),
+export const events = mysqlTable('events', {
+  id: int('id').primaryKey().autoincrement(),
+  title: varchar('title', { length: 255 }).notNull(),
   description: text('description').notNull(),
-  location: text('location').notNull(),
-  date: text('date').notNull(),
+  location: varchar('location', { length: 255 }).notNull(),
+  date: varchar('date', { length: 100 }).notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const eventRegistrations = pgTable('event_registrations', {
-  id: serial('id').primaryKey(),
-  eventId: integer('event_id').references(() => events.id).notNull(),
-  name: text('name').notNull(),
-  email: text('email').notNull(),
-  company: text('company'),
-  country: text('country'),
+export const eventRegistrations = mysqlTable('event_registrations', {
+  id: int('id').primaryKey().autoincrement(),
+  eventId: int('event_id').references(() => events.id).notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  company: varchar('company', { length: 255 }),
+  country: varchar('country', { length: 100 }),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const testimonials = pgTable('testimonials', {
-  id: serial('id').primaryKey(),
-  name: text('name').notNull(),
-  company: text('company'),
-  rating: integer('rating').notNull(),
+export const testimonials = mysqlTable('testimonials', {
+  id: int('id').primaryKey().autoincrement(),
+  name: varchar('name', { length: 255 }).notNull(),
+  company: varchar('company', { length: 255 }),
+  rating: int('rating').notNull(),
   comment: text('comment').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const chatSessions = pgTable('chat_sessions', {
-  id: serial('id').primaryKey(),
-  uid: text('uid').notNull(), // Guest session ID or Firebase UID
+export const chatSessions = mysqlTable('chat_sessions', {
+  id: int('id').primaryKey().autoincrement(),
+  uid: varchar('uid', { length: 255 }).notNull(), // Guest session ID or Firebase UID
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const chatMessages = pgTable('chat_messages', {
-  id: serial('id').primaryKey(),
-  sessionId: integer('session_id').references(() => chatSessions.id).notNull(),
-  role: text('role').notNull(), // 'user' | 'assistant'
+export const chatMessages = mysqlTable('chat_messages', {
+  id: int('id').primaryKey().autoincrement(),
+  sessionId: int('session_id').references(() => chatSessions.id).notNull(),
+  role: varchar('role', { length: 50 }).notNull(), // 'user' | 'assistant'
   content: text('content').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 });

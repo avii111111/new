@@ -58,6 +58,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
     }
 }
 
+// 2.5 Handle Newsletter Subscription from Footer
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe_email'])) {
+    $sub_email = trim($_POST['subscribe_email'] ?? '');
+    if (empty($sub_email) || !filter_var($sub_email, FILTER_VALIDATE_EMAIL)) {
+        $feedback_error = "Please provide a valid corporate email address.";
+    } else {
+        $feedback_success = "Success! " . htmlspecialchars($sub_email) . " has been successfully subscribed to our weekly AI-Solutions digest.";
+    }
+}
+
 // 3. Fetch Testimonials to Display
 $reviews = [];
 try {

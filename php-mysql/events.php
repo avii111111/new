@@ -189,7 +189,7 @@ foreach ($events as $event) {
 
                         <div class="mb-3">
                             <label class="form-label small fw-semibold text-muted">Company / Organization</label>
-                            <input type="text" name="name_company" class="form-control border rounded-3 p-2.5 text-sm" placeholder="e.g. Innovate Ltd">
+                            <input type="text" name="company" class="form-control border rounded-3 p-2.5 text-sm" placeholder="e.g. Innovate Ltd">
                         </div>
 
                         <div class="mb-3">

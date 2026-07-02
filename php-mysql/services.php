@@ -84,7 +84,6 @@ $services = [
                                     <i class="bi bi-chevron-right text-secondary me-2 mt-1"></i>
                                     <span><?php echo htmlspecialchars($feature); ?></span>
                                 </li>
-                            <?php end99; // Using standard dynamic layout foreach ?>
                             <?php endforeach; ?>
                         </ul>
                         

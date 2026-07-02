@@ -4,23 +4,21 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 const sqlHost = process.env.SQL_HOST || "127.0.0.1";
-const sqlDbName = process.env.SQL_DB_NAME || "postgres";
-const user = process.env.SQL_ADMIN_USER || "postgres";
-const password = process.env.SQL_ADMIN_PASSWORD || "postgres";
+const sqlDbName = process.env.SQL_DB_NAME || "enterprise_ai";
+const user = process.env.SQL_USER || "root";
+const password = process.env.SQL_PASSWORD || "";
 
-console.log(`Using user: ${user} to connect to database.`);
+console.log(`Using user: ${user} to connect to MySQL database.`);
 
 export default defineConfig({
   schema: "./src/db/schema.ts",
   out: "./drizzle",
-  dialect: "postgresql",
-  schemaFilter: ["public"],
+  dialect: "mysql",
   dbCredentials: {
     host: sqlHost,
     user: user,
     password: password,
     database: sqlDbName,
-    ssl: false,
   },
   verbose: true,
 });
